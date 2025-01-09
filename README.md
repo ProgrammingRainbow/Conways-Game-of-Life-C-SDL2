@@ -15,6 +15,13 @@ git clone https://github.com/ProgrammingRainbow/Conways-Game-of-Life-C-SDL2
 cd Conways-Game-of-Life-C-SDL2
 make run
 ```
+The Makefile builds debug by default. It also supports these commands:
+```
+make rebuild
+make clean
+make release
+SRC_DIR=Video8 make rebuild run
+```
 # Controls
 Up Arrow - Speeds up the game.\
 Down Arrow - Slows down the game.\
