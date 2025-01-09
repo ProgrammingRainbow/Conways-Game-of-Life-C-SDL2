@@ -70,7 +70,7 @@ bool message_generate(struct Message *m, const char *text) {
 
     m->surface = TTF_RenderText_Blended(m->font, text, m->color);
     if (!m->surface) {
-        fprintf(stderr, "Error creating a surface: %s\n", SDL_GetError());
+        fprintf(stderr, "Error creating a surface: %s\n", TTF_GetError());
         return false;
     }
 
@@ -90,6 +90,6 @@ bool message_generate(struct Message *m, const char *text) {
     return true;
 }
 
-void message_draw(struct Message *m) {
+void message_draw(const struct Message *m) {
     SDL_RenderCopy(m->renderer, m->image, NULL, &m->rect);
 }

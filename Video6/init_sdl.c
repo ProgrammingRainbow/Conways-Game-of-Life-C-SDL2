@@ -37,7 +37,7 @@ bool game_init_sdl(struct Game *g) {
         SDL_SetWindowIcon(g->window, icon_surf);
         SDL_FreeSurface(icon_surf);
     } else {
-        fprintf(stderr, "Error creating icon surface: %s\n", SDL_GetError());
+        fprintf(stderr, "Error creating icon surface: %s\n", IMG_GetError());
         return false;
     }
 

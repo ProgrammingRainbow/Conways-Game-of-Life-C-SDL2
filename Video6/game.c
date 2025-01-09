@@ -5,7 +5,7 @@ bool game_toggle_pause(struct Game *g);
 bool game_increase_speed(struct Game *g);
 bool game_decrease_speed(struct Game *g);
 bool game_events(struct Game *g);
-void game_draw(struct Game *g);
+void game_draw(const struct Game *g);
 
 bool game_new(struct Game **game) {
     *game = calloc(1, sizeof(struct Game));
@@ -127,6 +127,7 @@ bool game_events(struct Game *g) {
             default:
                 break;
             }
+            break;
         default:
             break;
         }
@@ -135,7 +136,7 @@ bool game_events(struct Game *g) {
     return true;
 }
 
-void game_draw(struct Game *g) {
+void game_draw(const struct Game *g) {
     SDL_SetRenderDrawColor(g->renderer, RENDERER_COLOR);
     SDL_RenderClear(g->renderer);
 

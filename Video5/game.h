@@ -1,9 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "main.h"
 #include "board.h"
 #include "fps.h"
-#include "main.h"
 
 struct Game {
         SDL_Window *window;

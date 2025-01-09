@@ -11,8 +11,6 @@ bool board_new(struct Board **board, SDL_Renderer *renderer) {
     b->renderer = renderer;
     b->rows = WINDOW_HEIGHT / SIZE;
     b->columns = WINDOW_WIDTH / SIZE;
-    b->rect.w = SIZE - 1;
-    b->rect.h = SIZE - 1;
 
     b->board = calloc(1, sizeof(bool) * (Uint64)(b->rows * b->columns));
     if (b->board == NULL) {
@@ -66,14 +64,15 @@ void board_clear(struct Board *b) {
     }
 }
 
-void board_draw(struct Board *b) {
+void board_draw(const struct Board *b) {
     SDL_SetRenderDrawColor(b->renderer, CELL_COLOR);
+    SDL_Rect rect = {0, 0, SIZE - 1, SIZE - 1};
     for (int row = 0; row < b->rows; row++) {
-        b->rect.y = SIZE * row;
+        rect.y = SIZE * row;
         for (int column = 0; column < b->columns; column++) {
-            b->rect.x = SIZE * column;
+            rect.x = SIZE * column;
             if (b->board[row * b->columns + column]) {
-                SDL_RenderFillRect(b->renderer, &b->rect);
+                SDL_RenderFillRect(b->renderer, &rect);
             }
         }
     }
