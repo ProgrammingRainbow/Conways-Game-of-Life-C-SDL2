@@ -6,8 +6,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define SDL_FLAGS (SDL_INIT_VIDEO | SDL_INIT_AUDIO)
+#define SDL_FLAGS SDL_INIT_EVERYTHING
 #define IMG_FLAGS IMG_INIT_PNG
+#define RENDERER_FLAGS SDL_RENDERER_ACCELERATED
 
 #define WINDOW_TITLE "Conway's Game of Life"
 #define WINDOW_WIDTH 1280

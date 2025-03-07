@@ -1,13 +1,13 @@
 #include "game.h"
 #include "init_sdl.h"
 
-bool game_events(struct Game *g);
-void game_draw(const struct Game *g);
+void game_events(struct Game *g);
+void game_draw(struct Game *g);
 
 bool game_new(struct Game **game) {
     *game = calloc(1, sizeof(struct Game));
     if (*game == NULL) {
-        fprintf(stderr, "Error in calloc of new game.\n");
+        fprintf(stderr, "Error in Calloc of New Game.\n");
         return false;
     }
     struct Game *g = *game;
@@ -18,7 +18,7 @@ bool game_new(struct Game **game) {
         return false;
     }
 
-    srand((Uint32)time(NULL));
+    srand((unsigned int)time(NULL));
 
     if (!board_new(&g->board, g->renderer)) {
         return false;
@@ -29,13 +29,20 @@ bool game_new(struct Game **game) {
 
 void game_free(struct Game **game) {
     if (*game) {
-        board_free(&(*game)->board);
+        struct Game *g = *game;
 
-        SDL_DestroyRenderer((*game)->renderer);
-        (*game)->renderer = NULL;
+        if (g->board) {
+            board_free(&g->board);
+        }
 
-        SDL_DestroyWindow((*game)->window);
-        (*game)->window = NULL;
+        if (g->renderer) {
+            SDL_DestroyRenderer(g->renderer);
+            g->renderer = NULL;
+        }
+        if (g->window) {
+            SDL_DestroyWindow(g->window);
+            g->window = NULL;
+        }
 
         IMG_Quit();
         SDL_Quit();
@@ -47,7 +54,7 @@ void game_free(struct Game **game) {
     }
 }
 
-bool game_events(struct Game *g) {
+void game_events(struct Game *g) {
     while (SDL_PollEvent(&g->event)) {
         switch (g->event.type) {
         case SDL_QUIT:
@@ -72,11 +79,9 @@ bool game_events(struct Game *g) {
             break;
         }
     }
-
-    return true;
 }
 
-void game_draw(const struct Game *g) {
+void game_draw(struct Game *g) {
     SDL_SetRenderDrawColor(g->renderer, RENDERER_COLOR);
     SDL_RenderClear(g->renderer);
 
@@ -85,17 +90,12 @@ void game_draw(const struct Game *g) {
     SDL_RenderPresent(g->renderer);
 }
 
-bool game_run(struct Game *g) {
+void game_run(struct Game *g) {
     while (g->is_running) {
-
-        if (!game_events(g)) {
-            return false;
-        }
+        game_events(g);
 
         game_draw(g);
 
         SDL_Delay(16);
     }
-
-    return true;
 }

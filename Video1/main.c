@@ -1,4 +1,3 @@
-#include "main.h"
 #include "game.h"
 
 int main(void) {
@@ -7,9 +6,8 @@ int main(void) {
     struct Game *game = NULL;
 
     if (game_new(&game)) {
-        if (game_run(game)) {
-            exit_status = EXIT_SUCCESS;
-        }
+        game_run(game);
+        exit_status = EXIT_SUCCESS;
     }
 
     game_free(&game);

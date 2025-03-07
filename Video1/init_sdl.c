@@ -1,9 +1,8 @@
 #include "init_sdl.h"
 
 bool game_init_sdl(struct Game *g) {
-
     if (SDL_Init(SDL_FLAGS)) {
-        fprintf(stderr, "Error initializing SDL: %s\n", SDL_GetError());
+        fprintf(stderr, "Error initializing SDL2. %s\n", SDL_GetError());
         return false;
     }
 
@@ -11,13 +10,13 @@ bool game_init_sdl(struct Game *g) {
                                  SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
                                  WINDOW_HEIGHT, 0);
     if (!g->window) {
-        fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
+        fprintf(stderr, "Error creating SDL_Window. %s\n", SDL_GetError());
         return false;
     }
 
-    g->renderer = SDL_CreateRenderer(g->window, -1, SDL_RENDERER_ACCELERATED);
+    g->renderer = SDL_CreateRenderer(g->window, -1, RENDERER_FLAGS);
     if (!g->renderer) {
-        fprintf(stderr, "Error creating renderer: %s\n", SDL_GetError());
+        fprintf(stderr, "Error creating SDL_Renderer. %s\n", SDL_GetError());
         return false;
     }
 
