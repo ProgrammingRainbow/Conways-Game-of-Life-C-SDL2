@@ -1,15 +1,16 @@
 #include "game.h"
 #include "init_sdl.h"
 
-void game_toggle_pause(struct Game *g);
-void game_events(struct Game *g);
-void game_update(struct Game *g);
+bool game_toggle_pause(struct Game *g);
+bool game_increase_speed(struct Game *g);
+bool game_decrease_speed(struct Game *g);
+bool game_events(struct Game *g);
 void game_draw(const struct Game *g);
 
 bool game_new(struct Game **game) {
     *game = calloc(1, sizeof(struct Game));
     if (*game == NULL) {
-        fprintf(stderr, "Error in Calloc of New Game.\n");
+        fprintf(stderr, "Error in calloc of new game.\n");
         return false;
     }
     struct Game *g = *game;
@@ -21,9 +22,18 @@ bool game_new(struct Game **game) {
         return false;
     }
 
-    srand((unsigned int)time(NULL));
+    srand((Uint32)time(NULL));
 
     if (!board_new(&g->board, g->renderer)) {
+        return false;
+    }
+
+    if (!fps_new(&g->fps)) {
+        return false;
+    }
+
+    if (!message_new(&g->message, g->renderer, g->is_paused,
+                     g->fps->target_delay)) {
         return false;
     }
 
@@ -32,21 +42,17 @@ bool game_new(struct Game **game) {
 
 void game_free(struct Game **game) {
     if (*game) {
-        struct Game *g = *game;
+        message_free(&(*game)->message);
+        fps_free(&(*game)->fps);
+        board_free(&(*game)->board);
 
-        if (g->board) {
-            board_free(&g->board);
-        }
+        SDL_DestroyRenderer((*game)->renderer);
+        (*game)->renderer = NULL;
 
-        if (g->renderer) {
-            SDL_DestroyRenderer(g->renderer);
-            g->renderer = NULL;
-        }
-        if (g->window) {
-            SDL_DestroyWindow(g->window);
-            g->window = NULL;
-        }
+        SDL_DestroyWindow((*game)->window);
+        (*game)->window = NULL;
 
+        TTF_Quit();
         IMG_Quit();
         SDL_Quit();
 
@@ -57,9 +63,28 @@ void game_free(struct Game **game) {
     }
 }
 
-void game_toggle_pause(struct Game *g) { g->is_paused = !g->is_paused; }
+bool game_toggle_pause(struct Game *g) {
+    g->is_paused = !g->is_paused;
+    return message_update(g->message, g->is_paused, g->fps->target_delay);
+}
 
-void game_events(struct Game *g) {
+bool game_increase_speed(struct Game *g) {
+    if (g->fps->target_delay > 8) {
+        g->fps->target_delay /= 2;
+        return message_update(g->message, g->is_paused, g->fps->target_delay);
+    }
+    return true;
+}
+
+bool game_decrease_speed(struct Game *g) {
+    if (g->fps->target_delay < 1024) {
+        g->fps->target_delay *= 2;
+        return message_update(g->message, g->is_paused, g->fps->target_delay);
+    }
+    return true;
+}
+
+bool game_events(struct Game *g) {
     while (SDL_PollEvent(&g->event)) {
         switch (g->event.type) {
         case SDL_QUIT:
@@ -75,14 +100,29 @@ void game_events(struct Game *g) {
             case SDL_SCANCODE_ESCAPE:
                 g->is_running = false;
                 break;
+            case SDL_SCANCODE_SPACE:
+                if (!game_toggle_pause(g)) {
+                    return false;
+                }
+                break;
+            case SDL_SCANCODE_UP:
+                if (!game_increase_speed(g)) {
+                    return false;
+                }
+                break;
+            case SDL_SCANCODE_DOWN:
+                if (!game_decrease_speed(g)) {
+                    return false;
+                }
+                break;
             case SDL_SCANCODE_R:
                 board_reset(g->board);
                 break;
             case SDL_SCANCODE_C:
                 board_clear(g->board);
                 break;
-            case SDL_SCANCODE_SPACE:
-                game_toggle_pause(g);
+            case SDL_SCANCODE_F:
+                fps_toggle_display(g->fps);
                 break;
             default:
                 break;
@@ -92,12 +132,8 @@ void game_events(struct Game *g) {
             break;
         }
     }
-}
 
-void game_update(struct Game *g) {
-    if (!g->is_paused) {
-        board_update(g->board);
-    }
+    return true;
 }
 
 void game_draw(const struct Game *g) {
@@ -105,18 +141,26 @@ void game_draw(const struct Game *g) {
     SDL_RenderClear(g->renderer);
 
     board_draw(g->board);
+    message_draw(g->message);
 
     SDL_RenderPresent(g->renderer);
 }
 
-void game_run(struct Game *g) {
+bool game_run(struct Game *g) {
     while (g->is_running) {
-        game_events(g);
 
-        game_update(g);
+        if (!game_events(g)) {
+            return false;
+        }
+
+        if (!g->is_paused) {
+            board_update(g->board);
+        }
 
         game_draw(g);
 
-        SDL_Delay(16);
+        fps_update(g->fps);
     }
+
+    return true;
 }
